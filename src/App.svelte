@@ -1,11 +1,15 @@
 <!-- @format -->
+<!-- src/App.svelte -->
 <script>
   import CobeGlobe from "./CobeGlobe.svelte";
   let domain = "";
   let recordType = "A";
+  let expectedIp = "";
   let results = [];
   let loading = false;
   let error = null;
+  let markers = [];
+  let markersReady = false;
 
   const dnsServers = [
     { ip: "8.8.8.8", name: "Google DNS" },
@@ -26,7 +30,9 @@
       if (!response.ok) {
         throw new Error("Failed to fetch server location");
       }
-      return response.json();
+      const data = await response.json();
+      const [lat, lng] = data.loc.split(",").map(Number);
+      return { ...data, lat, lng };
     } catch (err) {
       return { error: err.message };
     }
@@ -36,6 +42,8 @@
     loading = true;
     error = null;
     results = [];
+    markers = [];
+    markersReady = false;
     try {
       const fetchPromises = dnsServers.map(async (server) => {
         const [dnsResult, location] = await Promise.all([
@@ -46,21 +54,34 @@
             .catch((err) => ({ error: err.message })),
           getServerLocation(server.ip),
         ]);
+        markers.push({ location: [location.lat, location.lng], size: 0.03 });
         return { server: server.name, ip: server.ip, dnsResult, location };
       });
       results = await Promise.all(fetchPromises);
+      markersReady = true;
+      //console.log("Markers:", markers);
     } catch (err) {
       error = err.message;
     } finally {
       loading = false;
     }
   }
+
+  function getHighlightClass(ip) {
+    if (!expectedIp) return "";
+    console.log(ip, expectedIp);
+    return ip[0] === expectedIp ? "highlight-green" : "highlight-red";
+  }
 </script>
 
 <main>
   <div class="parent">
     <div class="div1">
-      <CobeGlobe />
+      {#if markersReady}
+        <CobeGlobe {markers} />
+      {:else}
+        <CobeGlobe />
+      {/if}
     </div>
     <div class="div2">
       <h1>DNS Propagation Checker</h1>
@@ -79,6 +100,11 @@
           <option value="NS">NS</option>
           <option value="TXT">TXT</option>
         </select>
+        <input
+          type="text"
+          bind:value={expectedIp}
+          placeholder="Enter expected IP address (optional)"
+        />
         <button type="submit" disabled={loading}>Check</button>
       </form>
 
@@ -93,22 +119,35 @@
       {#if results.length > 0}
         <h2>Results for {domain}</h2>
         <ul>
-          {#each results as result}
-            <li>
-              <strong>{result.server}:</strong>
-              {#if result.dnsResult.error}
-                <span style="color: red;">{result.dnsResult.error}</span>
-              {:else}
-                <span>{result.dnsResult.records}</span>
-              {/if}
-              {#if result.location.error}
-                <span style="color: red;">{result.location.error}</span>
-              {:else}
-                <p>
-                  Location: {result.location.city}, {result.location.region}, {result
-                    .location.country}
-                </p>
-              {/if}
+          {#each results as result, i}
+            <li
+              class="fade-in {getHighlightClass(result.dnsResult.records)}"
+              style="animation-delay: {i * 0.2}s;"
+            >
+              <div class="resultInner">
+                <div class="dns">
+                  <span><strong>{result.server} ({result.ip}):</strong></span>
+                  {#if result.location.error}
+                    <span class="location" style="color: red;">
+                      <small>{result.location.error}</small></span
+                    >
+                  {:else}
+                    <span class="location">
+                      <small
+                        >Location: {result.location.region}, {result.location
+                          .country}</small
+                      >
+                    </span>
+                  {/if}
+                </div>
+                <div>
+                  {#if result.dnsResult.error}
+                    <span style="color: red;">{result.dnsResult.error}</span>
+                  {:else}
+                    <span>{result.dnsResult.records}</span>
+                  {/if}
+                </div>
+              </div>
             </li>
           {/each}
         </ul>
@@ -118,22 +157,30 @@
 </main>
 
 <style>
-  main {
-  }
-
   .parent {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: 1fr;
     grid-column-gap: 0px;
     grid-row-gap: 0px;
+    width: 100vw;
   }
 
   .div1 {
     grid-area: 1 / 1 / 2 / 2;
+    height: 100vh;
+    width: 50vw;
   }
   .div2 {
     grid-area: 1 / 2 / 2 / 3;
+    height: calc(100vh - 2em);
+    padding: 1em;
+    display: flex;
+    align-content: center;
+    align-items: stretch;
+    flex-direction: column;
+    justify-content: center;
+    width: calc(50vw - 2em);
   }
 
   input,
@@ -143,5 +190,53 @@
   }
   button {
     padding: 0.5em;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    padding: 0.5em;
+  }
+
+  li span {
+    display: inline-block;
+  }
+
+  li .resultInner {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  li .dns {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .fade-in {
+    opacity: 0; /* Start with the items hidden */
+    animation: fadeIn 1s forwards; /* 1s duration, forwards to keep the final state */
+  }
+
+  .highlight-green {
+    background-color: lightgreen;
+    color: black;
+  }
+
+  .highlight-red {
+    background-color: lightcoral;
   }
 </style>

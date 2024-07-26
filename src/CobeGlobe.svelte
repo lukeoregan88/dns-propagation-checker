@@ -1,56 +1,70 @@
 <!-- @format -->
 <!-- src/CobeGlobe.svelte -->
 <script>
-  import { onMount } from "svelte";
+  import { onMount, onDestroy, afterUpdate } from "svelte";
+  import { tick } from "svelte";
+
+  export let markers = [];
 
   let canvas;
+  let globe;
 
-  onMount(async () => {
-    // Dynamically import Cobe from the CDN
+  const initializeGlobe = async () => {
     const createGlobe = (await import("https://cdn.skypack.dev/cobe")).default;
 
     let phi = 0;
 
-    const globe = createGlobe(canvas, {
+    globe = createGlobe(canvas, {
       devicePixelRatio: 2,
-      width: 300 * 2,
-      height: 300 * 2,
+      width: 400 * 2,
+      height: 400 * 2,
       phi: 0,
       theta: 0,
       dark: 1,
       diffuse: 1.2,
+      scale: 3,
       mapSamples: 16000,
       mapBrightness: 6,
-      baseColor: [0.3, 0.3, 0.3],
-      markerColor: [0.1, 0.8, 1],
-      glowColor: [1, 1, 1],
-      markers: [
-        { location: [37.7595, -122.4367], size: 0.03 },
-        { location: [40.7128, -74.006], size: 0.1 },
-      ],
+      baseColor: [1, 1, 1],
+      markerColor: [1, 1, 0],
+      glowColor: [0.1, 0.1, 0.1],
+      offset: [0, 0],
+      markers,
       onRender: (state) => {
-        // Called on every animation frame.
         state.phi = phi;
         phi += 0.001;
       },
     });
+  };
+
+  onMount(() => {
+    initializeGlobe();
+  });
+
+  afterUpdate(async () => {
+    if (markers.length > 0) {
+      if (globe) {
+        globe.destroy();
+      }
+      await tick(); // Wait for DOM updates
+      initializeGlobe();
+    }
+  });
+
+  onDestroy(() => {
+    if (globe) {
+      globe.destroy();
+    }
   });
 </script>
 
-<div class="globe">
-  <canvas bind:this={canvas} style="width: 100%; height: 600px;"></canvas>
-</div>
+<canvas bind:this={canvas} style="width: 100%; height: 100%;"></canvas>
 
 <style>
-  .globe {
-    display: grid;
-    place-items: center;
-    place-content: center;
-    height: 100vh;
-    width: 100%;
-  }
   canvas {
     display: block;
     margin: 0 auto;
+    height: 100%;
+    width: 100%;
   }
 </style>
