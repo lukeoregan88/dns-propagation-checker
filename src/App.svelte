@@ -14,13 +14,13 @@
   const dnsServers = [
     { ip: "8.8.8.8", name: "Google DNS" },
     { ip: "1.1.1.1", name: "Cloudflare DNS" },
+    { ip: "194.145.240.6", name: "Fivestar DNS" },
+    { ip: "5.2.75.75", name: "AHA DNS" },
     { ip: "9.9.9.9", name: "Quad9 DNS" },
     { ip: "208.67.222.222", name: "OpenDNS" },
     { ip: "84.200.69.80", name: "DNS.Watch" },
     { ip: "8.26.56.26", name: "Comodo Secure DNS" },
     { ip: "195.46.39.39", name: "SafeDNS" },
-    { ip: "156.154.70.1", name: "Neustar DNS" },
-    { ip: "185.228.168.9", name: "CleanBrowsing DNS" },
     // Add more DNS servers as needed
   ];
 
@@ -47,19 +47,22 @@
     try {
       const fetchPromises = dnsServers.map(async (server) => {
         const [dnsResult, location] = await Promise.all([
-          fetch(
-            `/api/dns-query?domain=${domain}&type=${recordType}&server=${server.ip}`
-          )
+          fetch(`https://networkcalc.com/api/dns/lookup/${domain}`)
             .then((response) => response.json())
             .catch((err) => ({ error: err.message })),
           getServerLocation(server.ip),
         ]);
         markers.push({ location: [location.lat, location.lng], size: 0.03 });
-        return { server: server.name, ip: server.ip, dnsResult, location };
+        return {
+          server: server.name,
+          ip: server.ip,
+          dnsResult: dnsResult.records[recordType],
+          location,
+        };
       });
       results = await Promise.all(fetchPromises);
       markersReady = true;
-      //console.log("Markers:", markers);
+      console.log("Markers:", markers);
     } catch (err) {
       error = err.message;
     } finally {
@@ -70,7 +73,7 @@
   function getHighlightClass(ip) {
     if (!expectedIp) return "";
     console.log(ip, expectedIp);
-    return ip[0] === expectedIp ? "highlight-green" : "highlight-red";
+    return ip === expectedIp ? "highlight-green" : "highlight-red";
   }
 </script>
 
@@ -103,7 +106,7 @@
         <input
           type="text"
           bind:value={expectedIp}
-          placeholder="Enter expected IP address (optional)"
+          placeholder="Expected Result (optional)"
         />
         <button type="submit" disabled={loading}>Check</button>
       </form>
@@ -121,7 +124,9 @@
         <ul>
           {#each results as result, i}
             <li
-              class="fade-in {getHighlightClass(result.dnsResult.records)}"
+              class="fade-in {getHighlightClass(
+                result.dnsResult[0]?.address || ''
+              )}"
               style="animation-delay: {i * 0.2}s;"
             >
               <div class="resultInner">
@@ -144,7 +149,7 @@
                   {#if result.dnsResult.error}
                     <span style="color: red;">{result.dnsResult.error}</span>
                   {:else}
-                    <span>{result.dnsResult.records}</span>
+                    <span>{result.dnsResult[0]?.address}</span>
                   {/if}
                 </div>
               </div>
@@ -155,8 +160,32 @@
     </div>
   </div>
 </main>
+<footer>
+  <p>
+    Made with ❤️ by
+    <a href="https://github.com/lukeoregan88" target="_blank">Luke O'Regan</a>
+  </p>
+</footer>
 
 <style>
+  main {
+    height: 90vh;
+    width: 100vw;
+  }
+  footer {
+    text-align: center;
+    background-color: #ffffff;
+    color: #333;
+    width: calc(100vw - 2em);
+    padding: 1em;
+    height: calc(10vh - 2em);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  footer p {
+    margin: 0;
+  }
   .parent {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -168,12 +197,12 @@
 
   .div1 {
     grid-area: 1 / 1 / 2 / 2;
-    height: 100vh;
+    height: 90vh;
     width: 50vw;
   }
   .div2 {
     grid-area: 1 / 2 / 2 / 3;
-    height: calc(100vh - 2em);
+    height: calc(90vh - 2em);
     padding: 1em;
     display: flex;
     align-content: center;
