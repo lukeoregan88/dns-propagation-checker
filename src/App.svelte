@@ -1,5 +1,4 @@
 <!-- @format -->
-<!-- src/App.svelte -->
 <script>
   import CobeGlobe from "./CobeGlobe.svelte";
   let domain = "";
@@ -23,6 +22,11 @@
     { ip: "195.46.39.39", name: "SafeDNS" },
     // Add more DNS servers as needed
   ];
+
+  // Reactive statement to clear results when recordType changes
+  $: if (recordType) {
+    results = [];
+  }
 
   async function getServerLocation(ip) {
     try {
@@ -70,10 +74,47 @@
     }
   }
 
-  function getHighlightClass(ip) {
+  function getHighlightClass(record, type) {
     if (!expectedIp) return "";
-    console.log(ip, expectedIp);
-    return ip === expectedIp ? "highlight-green" : "highlight-red";
+    let valueToCompare;
+    switch (type) {
+      case "A":
+      case "AAAA":
+        valueToCompare = record.address;
+        break;
+      case "CNAME":
+        valueToCompare = record.address;
+        break;
+      case "MX":
+        valueToCompare = record.exchange;
+        break;
+      case "NS":
+        valueToCompare = record.nameserver;
+        break;
+      case "TXT":
+        valueToCompare = record;
+        break;
+      default:
+        valueToCompare = "";
+    }
+    return valueToCompare === expectedIp ? "highlight-green" : "highlight-red";
+  }
+
+  function formatDNSRecord(record, type) {
+    switch (type) {
+      case "A":
+      case "AAAA":
+      case "CNAME":
+        return `${record.address}`;
+      case "MX":
+        return `${record.exchange}`;
+      case "NS":
+        return `${record.nameserver}`;
+      case "TXT":
+        return `${record}`;
+      default:
+        return JSON.stringify(record);
+    }
   }
 </script>
 
@@ -125,7 +166,8 @@
           {#each results as result, i}
             <li
               class="fade-in {getHighlightClass(
-                result.dnsResult[0]?.address || ''
+                result.dnsResult[0] || {},
+                recordType
               )}"
               style="animation-delay: {i * 0.2}s;"
             >
@@ -149,7 +191,11 @@
                   {#if result.dnsResult.error}
                     <span style="color: red;">{result.dnsResult.error}</span>
                   {:else}
-                    <span>{result.dnsResult[0]?.address}</span>
+                    {#each result.dnsResult as record}
+                      <div class={getHighlightClass(record, recordType)}>
+                        {formatDNSRecord(record, recordType)}
+                      </div>
+                    {/each}
                   {/if}
                 </div>
               </div>
@@ -164,13 +210,16 @@
   <p>
     Made with ❤️ by
     <a href="https://github.com/lukeoregan88" target="_blank">Luke O'Regan</a>
+    <br />
+    <strong>BTC address</strong>: 328fUT3qVNZJ8EbHGaZ3M1VvCzEbFGW39f
   </p>
 </footer>
 
 <style>
   main {
-    height: 90vh;
+    min-height: 100vh;
     width: 100vw;
+    height: auto;
   }
   footer {
     text-align: center;
@@ -193,17 +242,21 @@
     grid-column-gap: 0px;
     grid-row-gap: 0px;
     width: 100vw;
+    min-height: 100vh;
+    height: auto;
   }
 
   .div1 {
     grid-area: 1 / 1 / 2 / 2;
-    height: 90vh;
+    min-height: 100vh;
+    height: auto;
     width: 50vw;
   }
   .div2 {
     grid-area: 1 / 2 / 2 / 3;
-    height: calc(90vh - 2em);
-    padding: 1em;
+    min-height: calc(100vh - 2em);
+    height: auto;
+    padding: 2em 1em;
     display: flex;
     align-content: center;
     align-items: stretch;
@@ -267,5 +320,11 @@
 
   .highlight-red {
     background-color: lightcoral;
+  }
+
+  .dnsResult {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
   }
 </style>
