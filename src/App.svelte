@@ -112,7 +112,7 @@
       </form>
 
       {#if loading}
-        <p>Loading...</p>
+        <p>Checking DNS...</p>
       {/if}
 
       {#if error}
