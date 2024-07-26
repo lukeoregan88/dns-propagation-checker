@@ -1,47 +1,61 @@
-# Svelte + Vite
+<!-- @format -->
 
-This template should help get you started developing with Svelte in Vite.
+# DNS Propagation Checker
 
-## Recommended IDE Setup
+A DNS Propagation Checker built with Svelte that allows users to check the propagation of DNS records across multiple DNS servers. This tool also highlights whether the DNS records match an expected IP address.
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+## Features
 
-## Need an official Svelte framework?
+- Check DNS propagation across multiple DNS servers.
+- Highlight DNS records that match an expected IP address.
+- Display server locations on an interactive globe using Cobe.
+- Supports various DNS record types (A, AAAA, CNAME, MX, NS, SOA, TXT).
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+## Installation
 
-## Technical considerations
+Follow these steps to set up the project locally.
 
-**Why use this over SvelteKit?**
+### Prerequisites
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+- Node.js and npm installed on your machine.
+- A GitHub account for hosting the project (optional).
 
-This template contains as little as possible to get started with Vite + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+### Clone the Repository
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+git clone https://github.com/lukeoregan88/dns-propagation-checker.git
+cd dns-propagation-checker
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+### Install Dependencies
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+npm install
 
-**Why include `.vscode/extensions.json`?**
+### Build the Application
 
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+npm run build
 
-**Why enable `checkJs` in the JS template?**
+### Run the Development Server
 
-It is likely that most cases of changing variable types in runtime are likely to be accidental, rather than deliberate. This provides advanced typechecking out of the box. Should you like to take advantage of the dynamically-typed nature of JavaScript, it is trivial to change the configuration.
+npm run dev
+Open your browser and navigate to http://localhost:5173.
 
-**Why is HMR not preserving my local component state?**
+### Usage
 
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/sveltejs/svelte-hmr/tree/master/packages/svelte-hmr#preservation-of-local-state).
+    1.	Enter the domain name you want to check in the input field.
+    2.	Select the DNS record type from the dropdown menu.
+    3.	(Optional) Enter the expected IP address to highlight matching records.
+    4.	Click the "Check" button to start the DNS propagation check.
 
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
+### License
 
-```js
-// store.js
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
-```
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+### Acknowledgments
+
+    •	Svelte
+    •	Cobe
+    •	NetworkCalc DNS API
+    •	ipinfo API
+
+### Contact
+
+For any inquiries or feedback, please contact lukeoregan88.
