@@ -7,8 +7,7 @@
     "start-server": "node server.js",
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "start": "concurrently \"npm run start-server\" \"npm run dev\""
+    "preview": "vite preview"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.1.1",

@@ -1,0 +1,26 @@
+# @format
+
+name: FTP Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install LFTP
+        run: sudo apt-get install -y lftp
+
+      - name: Deploy to FTP server
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          lftp -u $FTP_USERNAME,$FTP_PASSWORD -e "set ftp:ssl-allow true; mirror -R ./dist /domains/lbor.dev/public_html/projects/dns-checker; quit" ftp://145.14.152.40
