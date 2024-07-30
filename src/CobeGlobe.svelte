@@ -10,6 +10,7 @@
   let globe;
 
   const initializeGlobe = async () => {
+    // @ts-ignore
     const createGlobe = (await import("https://cdn.skypack.dev/cobe")).default;
 
     let phi = 0;
