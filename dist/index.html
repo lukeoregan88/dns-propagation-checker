@@ -54,15 +54,18 @@
       src="https://www.googletagmanager.com/gtag/js?id=G-KM55ZK9MFY"
     ></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
+      var host = window.location.hostname;
+      if (host != "localhost") {
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          dataLayer.push(arguments);
+        }
+        gtag("js", new Date());
 
-      gtag("config", "G-KM55ZK9MFY");
+        gtag("config", "G-KM55ZK9MFY");
+      }
     </script>
-    <script type="module" crossorigin src="./assets/index-DqcKloyu.js"></script>
+    <script type="module" crossorigin src="./assets/index-B7jRlUl2.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-T8PM0xW3.css">
   </head>
   <body>
