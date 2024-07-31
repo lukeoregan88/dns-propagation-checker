@@ -1,6 +1,7 @@
 <!-- @format -->
 <script>
   import CobeGlobe from "./CobeGlobe.svelte";
+  import BuyMeACoffee from "./assets/BuyMeACoffee.svelte";
 
   let domain = "";
   let recordType = "A";
@@ -283,6 +284,6 @@
     Made with ❤️ by
     <a href="https://github.com/lukeoregan88" target="_blank">Luke O'Regan</a>
     <br />
-    <strong>BTC address</strong>: 328fUT3qVNZJ8EbHGaZ3M1VvCzEbFGW39f
+    <BuyMeACoffee />
   </p>
 </footer>
